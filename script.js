@@ -27,20 +27,8 @@ const gameBoard = (function(){
         console.log('  1    2    3');
     }
 
-    const play = function(row, col){
-        let x;
-        switch (row){
-            case 1:
-                x = 0;
-                break;
-            case 2:
-                x = 3;
-                break;
-            case 3:
-                x = 6;
-                break;
-        }
-
+    const play = function(number){
+        
         function checkWinner (){
             turn++;
             for (let letter of get()) {
@@ -63,14 +51,12 @@ const gameBoard = (function(){
             }
         }
 
-        let y = col - 1;
-        let z = x + y;
-        if (board[z] === ""){
-            board[z] = player.getCurrent().playerMark;
+        if (board[number] === ""){
+            board[number] = player.getCurrent().playerMark;
 
             console.log(`${player.getCurrent().name} played:`)
             printBoard();
-            boardToDOM.updateValues(z);
+            boardToDOM.updateValues(number);
             checkWinner();
             player.next();
             gameflow.nextRound();
@@ -196,39 +182,39 @@ board.addEventListener('click', (event) => {
     let cell = event.target;
     switch (cell.id){
         case '_0':
-            gameBoard.play(1,1);
+            gameBoard.play(0);
             break;
         
         case '_1':
-            gameBoard.play(1,2);
+            gameBoard.play(1);
             break;
 
         case '_2':
-            gameBoard.play(1,3);
+            gameBoard.play(2);
             break
         
         case '_3':
-            gameBoard.play(2,1);
+            gameBoard.play(3);
             break
 
         case '_4':
-            gameBoard.play(2,2);
+            gameBoard.play(4);
             break
 
         case '_5':
-            gameBoard.play(2,3);
+            gameBoard.play(5);
             break
         
         case '_6':
-            gameBoard.play(3,1);
+            gameBoard.play(6);
             break
 
         case '_7':
-            gameBoard.play(3,2);
+            gameBoard.play(7);
             break
 
         case '_8':
-            gameBoard.play(3,3)
+            gameBoard.play(8)
             break
     }    
 })
