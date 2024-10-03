@@ -2,7 +2,7 @@ const gameBoard = (function(){
     let board = [];
     let turn = 0;
 
-    for (i=0; i<9; i++){
+    for (let i=0; i<9; i++){
         board.push("")
     }
 
@@ -34,10 +34,9 @@ const gameBoard = (function(){
             for (let letter of get()) {
                 if (letter[0] != "" && letter[0] === letter[1] && letter[0] === letter[2]){
                     player.scores();
-                    gameflow.endGame;
-                    reset();
-                    get();
-                    printBoard();
+                    boardToDOM.updateScore();
+                    gameflow.endGame();
+                    modal().showModal();
                     turn = 0;
                     
                 }
@@ -59,20 +58,19 @@ const gameBoard = (function(){
             boardToDOM.updateValues(number);
             checkWinner();
             player.next();
-            gameflow.nextRound();
             console.log(`${player.getCurrent().name}'s turn.`)
             
         }   
     }
 
     const reset = function(){
-        for (i=0; i<9; i++){
+        for (let i=0; i<9; i++){
             board[i] = "";
             const cell = document.querySelectorAll(".cell");
             cell.forEach(cell => {
-                cell.textContent = ""})
+                while (cell.firstChild)
+                cell.removeChild(cell.firstChild)})
         }
-        // boardToDOM.resetValues();
     }
 
     return {printBoard, play, reset, board}
@@ -112,11 +110,11 @@ const player = (function(){
     }
 
     const higherScore = function(){
-      higherScore = players[0].score > players[1].score ? players[0].score : players[1].score
-        return higherScore;
+      displayHigherScore = players[0].score > players[1].score ? players[0].score : players[1].score
+        return displayHigherScore;
     }
 
-    return {next, getCurrent, rename, scores, resetScore, higherScore}
+    return {next, getCurrent, rename, scores, resetScore, higherScore, players}
 })();
 
 const gameflow = (function(){
@@ -132,11 +130,13 @@ const gameflow = (function(){
 
     const nextRound = function(){
         round++
+        gameBoard.reset();
+        gameBoard.printBoard();
     }
 
     const endGame = function (){
     
-        if (higherScore() > maxRound/2){
+        if (player.higherScore() > maxRound/2){
             console.log("The game has ended. Play again?")
         }
     }
@@ -148,13 +148,13 @@ const gameflow = (function(){
     return {newGame, nextRound, endGame, getRound}
 })();
 
-// Above this line are placed the game logic, below its the DOM management
+// Above this line is placed the game logic, below its the DOM management
 
 const boardToDOM = (function(){
     
     const board = document.querySelector(".board");
 
-    for (i=0; i<9; i++){
+    for (let i=0; i<9; i++){
         const cell = document.createElement("div");
         cell.setAttribute("id", `_${i}`)
         cell.classList.add("cell");
@@ -162,59 +162,70 @@ const boardToDOM = (function(){
     }
 
     const updateValues = function(id){
-        const cell = document.querySelector(`#_${id}`)
-        cell.textContent = (gameBoard.board[id]);
+        const cell = document.querySelector(`#_${id}`);
+        // cell.textContent = (gameBoard.board[id]);
+        let image = document.createElement("img");
+        let string = "./images/"+`${player.getCurrent().playerMark}`+".svg";
+        image.setAttribute("src", string);
+        image.classList.add(`${player.getCurrent().playerMark}`)
+        cell.appendChild(image);
+        
+        const displayP1 = document.querySelector(".p1");
+        const displayP2 = document.querySelector(".p2");
+      
+        displayP1.textContent = (`${player.players[0].name}`);
+        displayP2.textContent = (`${player.players[1].name}`);
+
+        const displayCurrentPlayer = document.querySelector("p");
+        displayCurrentPlayer.textContent = (`${player.getCurrent().name}`)
+    };
+
+    const updateScore = function(){
+        let score1Display = document.querySelector("#p1score");
+        let score2Display = document.querySelector("#p2score");
+        score1Display.textContent = (`${player.players[0].score}`);
+        score2Display.textContent = (`${player.players[1].score}`);
+
     }
 
-    // const resetValues = function(){
-    //     for (i=0; i<9; i++){
-    //         const cell = document.querySelector(`#_${i}`);
-    //         cell.textcontent = ("");
-    //     }
-    // }
-
-    return {updateValues}
+    return {updateValues, updateScore}
 })();
 
 
 const board = document.querySelector(".board");
 board.addEventListener('click', (event) => {
     let cell = event.target;
-    switch (cell.id){
-        case '_0':
-            gameBoard.play(0);
-            break;
-        
-        case '_1':
-            gameBoard.play(1);
-            break;
-
-        case '_2':
-            gameBoard.play(2);
-            break
-        
-        case '_3':
-            gameBoard.play(3);
-            break
-
-        case '_4':
-            gameBoard.play(4);
-            break
-
-        case '_5':
-            gameBoard.play(5);
-            break
-        
-        case '_6':
-            gameBoard.play(6);
-            break
-
-        case '_7':
-            gameBoard.play(7);
-            break
-
-        case '_8':
-            gameBoard.play(8)
-            break
-    }    
+    let index = cell.id.charAt(1);
+    gameBoard.play(index);
 })
+
+const displayP1 = document.querySelector(".p1");
+const displayP2 = document.querySelector(".p2");
+  
+displayP1.textContent = (`${player.players[0].name}`);
+displayP2.textContent = (`${player.players[1].name}`);
+
+// const renameButton = document.querySelector(".renameButton");
+// renameButton.addEventListener('click', ()=>{
+//     if (displayP1.value != ""){
+//     player.rename(1, displayP1.value)};
+
+//     if (displayP2.value != ""){
+//     player.rename(2, displayP2.value)};
+// })
+
+const modal = function(){
+    let modals = document.querySelector('.roundResult');
+    let closeButton = document.createElement("div");
+    closeButton.textContent = ('x');
+    closeButton.classList.add('closeButton');
+    modals.textContent = (`${player.getCurrent().name} wins the round!`);
+    modals.appendChild(closeButton);
+    closeButton.addEventListener('click', ()=>{
+        modals.close();
+    })
+    modals.addEventListener('close',()=>{
+        gameflow.nextRound();
+    })
+
+    return modals}
