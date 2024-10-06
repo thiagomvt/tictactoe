@@ -36,7 +36,6 @@ const gameBoard = (function(){
                     player.scores();
                     boardToDOM.updateScore();
                     gameflow.endGame();
-                    modal().showModal();
                     turn = 0;
                     
                 }
@@ -55,7 +54,7 @@ const gameBoard = (function(){
 
             console.log(`${player.getCurrent().name} played:`)
             printBoard();
-            boardToDOM.updateValues(number);
+            boardToDOM.updateCells(number);
             checkWinner();
             player.next();
             console.log(`${player.getCurrent().name}'s turn.`)
@@ -71,6 +70,7 @@ const gameBoard = (function(){
                 while (cell.firstChild)
                 cell.removeChild(cell.firstChild)})
         }
+        boardToDOM.updateScore();
     }
 
     return {printBoard, play, reset, board}
@@ -85,7 +85,8 @@ const player = (function(){
     let currentPlayer = players[0];
 
     function next(){
-        currentPlayer === players[0] ? currentPlayer = players[1] : currentPlayer = players[0]
+        currentPlayer === players[0] ? currentPlayer = players[1] : currentPlayer = players[0];
+        displayNames.current();
     }
 
     const getCurrent = function(){
@@ -120,12 +121,12 @@ const player = (function(){
 const gameflow = (function(){
 
     let round = 0;
-    let maxRound = 5;
+    let maxRound = 3;
 
-    const newGame = function(max){
+    const newGame = function(){
         player.resetScore();
         gameBoard.reset();
-        maxRound = max;
+        
     }
 
     const nextRound = function(){
@@ -138,6 +139,9 @@ const gameflow = (function(){
     
         if (player.higherScore() > maxRound/2){
             console.log("The game has ended. Play again?")
+            modal.gameEnd();
+        } else {
+            modal.roundEnd();
         }
     }
     
@@ -148,7 +152,7 @@ const gameflow = (function(){
     return {newGame, nextRound, endGame, getRound}
 })();
 
-// Above this line is placed the game logic, below its the DOM management
+// Above this line is placed the game logic, below its the DOM management and events handler
 
 const boardToDOM = (function(){
     
@@ -161,34 +165,22 @@ const boardToDOM = (function(){
         board.appendChild(cell);
     }
 
-    const updateValues = function(id){
+    const updateCells = function(id){
         const cell = document.querySelector(`#_${id}`);
-        // cell.textContent = (gameBoard.board[id]);
         let image = document.createElement("img");
         let string = "./images/"+`${player.getCurrent().playerMark}`+".svg";
         image.setAttribute("src", string);
         image.classList.add(`${player.getCurrent().playerMark}`)
-        cell.appendChild(image);
-        
-        const displayP1 = document.querySelector(".p1");
-        const displayP2 = document.querySelector(".p2");
-      
-        displayP1.textContent = (`${player.players[0].name}`);
-        displayP2.textContent = (`${player.players[1].name}`);
-
-        const displayCurrentPlayer = document.querySelector("p");
-        displayCurrentPlayer.textContent = (`${player.getCurrent().name}`)
-    };
+        cell.appendChild(image);}
 
     const updateScore = function(){
         let score1Display = document.querySelector("#p1score");
         let score2Display = document.querySelector("#p2score");
         score1Display.textContent = (`${player.players[0].score}`);
         score2Display.textContent = (`${player.players[1].score}`);
-
     }
 
-    return {updateValues, updateScore}
+    return {updateCells, updateScore}
 })();
 
 
@@ -199,33 +191,128 @@ board.addEventListener('click', (event) => {
     gameBoard.play(index);
 })
 
-const displayP1 = document.querySelector(".p1");
-const displayP2 = document.querySelector(".p2");
-  
-displayP1.textContent = (`${player.players[0].name}`);
-displayP2.textContent = (`${player.players[1].name}`);
+const displayNames = (function(){
+    const displayP1 = document.querySelector(".p1");
+    const displayP2 = document.querySelector(".p2");
+    
+    const names = function(){
+        displayP1.textContent = (`${player.players[0].name}`);
+        displayP2.textContent = (`${player.players[1].name}`);}
 
-// const renameButton = document.querySelector(".renameButton");
-// renameButton.addEventListener('click', ()=>{
-//     if (displayP1.value != ""){
-//     player.rename(1, displayP1.value)};
+    const current = function (){
+        const whoPlays = document.querySelector(".currentPlayer");
+        whoPlays.textContent=(`${player.getCurrent().name}'s turn.`)}
 
-//     if (displayP2.value != ""){
-//     player.rename(2, displayP2.value)};
-// })
+    names();
+    current();
 
-const modal = function(){
-    let modals = document.querySelector('.roundResult');
-    let closeButton = document.createElement("div");
-    closeButton.textContent = ('x');
-    closeButton.classList.add('closeButton');
-    modals.textContent = (`${player.getCurrent().name} wins the round!`);
-    modals.appendChild(closeButton);
-    closeButton.addEventListener('click', ()=>{
+    return {current, names}
+})();
+
+const pageButtons = (function(){
+const renameButton = document.querySelector(".rename");
+    renameButton.addEventListener('click', ()=>{
+    modal.rename()});
+
+const restartButton = document.querySelector(".restart");
+    restartButton.addEventListener('click', ()=>{
+        gameflow.newGame();
+    })})();
+
+const modal = (function(){
+    let modals = document.querySelector('dialog');
+
+    const roundEnd = function(){
+        let closeButton = document.createElement("div");
+        closeButton.textContent = ('x');
+        closeButton.classList.add('closeButton');
+
+        modals.textContent = (`${player.getCurrent().name} wins the round!`);
+        modals.appendChild(closeButton);
+   
+        closeButton.addEventListener('click', ()=>{
         modals.close();
-    })
-    modals.addEventListener('close',()=>{
+        modals.innerHTML = '';
+        })
+        modals.addEventListener('close',()=>{    
         gameflow.nextRound();
-    })
+        modals.innerHTML = '';
+        })
 
-    return modals}
+        modals.showModal();
+    }
+
+    const gameEnd = function(){
+        modals.textContent = (`${player.getCurrent().name} won! Play again?`);
+        let yes = document.createElement("p");
+        yes.textContent = ('Yes');
+        modals.appendChild(yes);
+        let no = document.createElement("p");
+        no.textContent = ('No');
+        modals.appendChild(no);
+
+        yes.addEventListener('click',()=>{
+            gameflow.newGame();
+            modals.close();
+        })
+        no.addEventListener('click',()=>{
+            modals.close();
+        })
+        modals.showModal();
+    }
+
+    const rename = function(){
+       
+        let name1 = document.createElement("input");
+        name1.setAttribute('id', 'name1');
+        let name2 = document.createElement("input");
+        name2.setAttribute('id', 'name2');
+        let name1label = document.createElement("label");
+        let name2label = document.createElement("label");
+        name1label.setAttribute('for', 'name1');
+        name1label.textContent = ('Player 1');
+        name2label.textContent = ('Player 2');
+        let skip = document.createElement("br");
+        let skip2 = document.createElement("br");
+
+        modals.appendChild(name1label);
+        modals.appendChild(name1);
+        modals.appendChild(skip);
+        modals.appendChild(name2label);
+        modals.appendChild(name2);
+        modals.appendChild(skip2);
+        let apply = document.createElement("button");
+        apply.textContent=('Apply')
+        let cancel = document.createElement("button");
+        cancel.textContent=('Cancel')
+        modals.appendChild(apply);
+        modals.appendChild(cancel);
+
+        apply.addEventListener('click',()=>{
+            if (name1.value != ""){
+                player.rename(1, name1.value)
+            }
+            
+            if (name2.value != ""){
+                player.rename(2, name2.value)
+            }
+
+            displayNames.names();
+            modals.close();
+            modals.innerHTML = '';
+        })
+
+        cancel.addEventListener('click',()=>{
+            modals.close();
+            modals.innerHTML = '';
+        })
+
+        modals.addEventListener('close',()=>{    
+            modals.innerHTML = '';
+            })
+
+        modals.showModal();
+    }
+
+    return {roundEnd, gameEnd, rename}
+})();

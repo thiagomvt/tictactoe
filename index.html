@@ -6,25 +6,34 @@
     <title>Tic-Tac-Toe</title>
     <link href="./style.css" rel="stylesheet"></link>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="noopener noreferrer">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
+        <div class="restart">
+            <p>Restart</p>
+            <img src="./images/restart.svg" alt="Circular arrow">
+        </div>
         <h1>
             Weed-Tac-Toe
         </h1>
+        
+        <div class="rename">
+            <p>Change names</p>
+            <img src="./images/rename.svg" alt="A pencil drawing">
+        </div>
     </header>
     <div class="info">
-        <dialog class="roundResult"></dialog>
-        <div>
+        <dialog class="dialog"></dialog>
+        <div class="p">
             <div class="p1"></div>
             <div id="p1score">0</div>
         </div>
 
-        <p></p>
+        <p class="currentPlayer"></p>
         
-        <div>
+        <div class="p">
             <div id="p2score">0</div>
             <div class="p2"></div>
         </div> 
@@ -35,7 +44,7 @@
     </div>
 
     <footer>
-        Foto de <a href="https://unsplash.com/pt-br/@mrbrodeur?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Matthew Brodeur</a> na <a href="https://unsplash.com/pt-br/fotografias/foto-de-closeup-da-planta-de-cannabis-qcCPIhhdgTw?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a>
+        Photo by <a href="https://unsplash.com/pt-br/@mrbrodeur?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Matthew Brodeur</a> on <a href="https://unsplash.com/pt-br/fotografias/foto-de-closeup-da-planta-de-cannabis-qcCPIhhdgTw?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a>
     </footer>
     
 
